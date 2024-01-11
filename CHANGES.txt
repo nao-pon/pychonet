@@ -25,3 +25,24 @@ v2.2.1, 02 Apr 2022 -- Add HotWaterGenerator. Update HomeAirConditioner
 v2.2.2, 04 Apr 2022 -- Library now returns None rather then False if no data is received.
 v2.2.3, 28 May 2022 -- Minor update to HomeAirConditioner to support silent mode
 v2.3.0, 22 June 2022 -- Support Push updated from supported ECHONETlite entities. 
+v2.3.1, 09 Jul 2022 -- Electronic lock bug fixes and stability improvements.
+v2.3.2, 30 Jul 2022 -- Discover process optimization and request success/failure detection.
+v2.3.3, 03 Aug 2022 -- Fixed a bug in judging the success or failure of the data set request.
+v2.3.4, 04 Aug 2022 -- Fix data handling issues in process_discovery_data().
+v2.3.5, 25 Sep 2022 -- Ignore not-yet-supported notifications of node profile class.
+v2.3.6, 26 Sep 2022 -- Added some ENL codes for HomeAirConditioner and DistributionPanelMeter.
+v2.3.7, 28 Sep 2022 -- Added _discover_callback to echonetapiclient.
+v2.3.8, 30 Sep 2022 -- Bug fix of calling _discover_callback().
+v2.3.9, 06 Aug 2022 -- Added LowVoltageSmartElectricEnergyMeter, Create a another socket for sending.
+v2.3.10, 26 Aug 2022 -- Revert use of send-only socket
+                     -- Bug fix for acceptability judgment when sending a request
+                     -- Adjusting the LowVoltageSmartElectricEnergyMeter
+v2.3.11, 01 Dec 2022 -- Add storage battery support
+                     -- Add single function lighting support
+v2.3.12, 07 Jan 2023 -- Fix #58 Consecutive requests to a device must wait for a response
+v2.3.13, 13 Jan 2023 -- Changed method of obtaining local IP address of HA, Rel. #124
+v2.3.14, 05 Jun 2023 -- Added support for AC with heater + humidity at the same time
+                     -- Added support for Lighting System (0x02, 0xA3)
+                     -- Added support for Fuel Cell (0x02, 0x7C)
+                     -- Query and store "product code" on host/device registration
+                     -- Added better control over which IP to listen to for multicast

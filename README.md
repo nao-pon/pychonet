@@ -3,11 +3,10 @@
 [![GitHub Release][releases-shield]][releases]
 [![License][license-shield]](LICENSE)
 ![Project Maintenance][maintenance-shield]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
 
 A library for interfacing with the ECHONETlite protocol as commonly used in Japan.
-Useful for interfacing to many interesting devices such as HVACs,
+Useful for interfacing to many interesting devices such as HVACs, light systems,
 electric car chargers, rice cookers (not joking), and solar systems
 that support ECHONETLite.
 
@@ -18,7 +17,7 @@ The basic boilerplate EchoNetInstance class can be used to provide
 raw connectivity to any compatible device but it is up to the developer
 to create useful classes. Any ECHONETlite class additions to the library are welcome.
 
-Version 2.0.0 of this libray was rebuilt to use asyncio for better compatability with home assistant.
+Version 2.0.0 of this library was rebuilt to use asyncio for better compatability with home assistant.
 
 
 It is designed to work with Python 3.9.5+
@@ -43,7 +42,7 @@ from pychonet import EchonetInstance
 udp = UDPServer()
 loop = asyncio.get_event_loop()
 udp.run("0.0.0.0", 3610, loop=loop)
-server = api(server=udp, loop=loop)
+server = api(server=udp)
 ```
 
 ### Discover a list of ECHONETlite instances on a particular server:
@@ -137,6 +136,12 @@ library for Home Assistant.
 Thanks to Futomi Hatano for open sourcing a well-documented ECHONET Lite
 library in Node JS.
 (https://github.com/futomi/node-echonet-lite)
+
+## References for ECHONET specifications
+
+- [ECHONET Lite Specification, Version 1.13](https://echonet.jp/spec_v113_lite_en/)
+  - [Part 2 ECHONET Lite Communications Middleware Specifications](https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/ECHONET_lite_V1_13_en/ECHONET-Lite_Ver.1.13(02)_E.pdf)
+- [APPENDIX, Detailed Requirements for ECHONET Device objects, Release Q](https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/Release/Release_Q/Appendix_Release_Q_E.pdf)
 
 ## License
 
