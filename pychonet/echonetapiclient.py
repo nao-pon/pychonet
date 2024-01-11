@@ -193,6 +193,7 @@ class ECHONETAPIClient:
             message_array["TID"] = tx_tid
             payload = buildEchonetMsg(message_array)
 
+        opc_count = len(opc)
         if no_res:
             result = True
         else:
