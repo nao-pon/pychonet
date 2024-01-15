@@ -375,5 +375,6 @@ class ECHONETAPIClient:
             self._update_callbacks[key] = []
         self._update_callbacks[key].append(fn)
 
+
 class EchonetMaxOpcError(Exception):
     pass
