@@ -18,6 +18,7 @@ from .ElectricLock import ElectricLock
 from .ElectricRainSlidingDoor import ElectricRainSlidingDoor
 from .ElectricShutter import ElectricShutter
 from .ElectricVehicleCharger import ElectricVehicleCharger
+from .ElectricVehicleChargerDischarger import ElectricVehicleChargerDischarger
 from .ElectricWaterHeater import ElectricWaterHeater
 from .ElectricWindow import ElectricWindow
 from .FloorHeater import FloorHeater
@@ -36,6 +37,7 @@ from .LowVoltageSmartElectricEnergyMeter import LowVoltageSmartElectricEnergyMet
 from .Refrigerator import Refrigerator
 from .SingleFunctionLighting import SingleFunctionLighting
 from .StorageBattery import StorageBattery
+from .HumiditySensor import HumiditySensor
 from .TemperatureSensor import TemperatureSensor
 from .WaterFlowMeter import WaterFlowMeter
 from .DistributedGeneratorElectricEnergyMeter import DistributedGeneratorElectricEnergyMeter
@@ -56,8 +58,12 @@ from .MicromotionSensor import MicromotionSensor
 from .PassageSensor import PassageSensor
 from .OpenCloseSensor import OpenCloseSensor
 from .ActivityAmountSensor import ActivityAmountSensor
+from .HumanDetectionSensor import HumanDetectionSensor
 from .RainSensor import RainSensor
 from .CommercialShowcase import CommercialShowcase
+from .DistributionPanelMeterController import DistributionPanelMeterController
+from .CombinationMicrowaveOven import CombinationMicrowaveOven
+
 
 def Factory(host, server, eojgc, eojcc, eojci=0x01):
     instance = None
@@ -81,9 +87,11 @@ def Factory(host, server, eojgc, eojcc, eojci=0x01):
         f"{0x00}-{0x25}": WaterFlowSensor,
         f"{0x00}-{0x26}": MicromotionSensor,
         f"{0x00}-{0x27}": PassageSensor,
+        f"{0x00}-{0x07}": HumanDetectionSensor,
         f"{0x00}-{0x28}": BedPresenceSensor,
         f"{0x00}-{0x29}": OpenCloseSensor,
         f"{0x00}-{0x2A}": ActivityAmountSensor,
+        f"{0x00}-{0x12}": HumiditySensor,
         f"{0x00}-{0x11}": TemperatureSensor,
         f"{0x01}-{0x30}": HomeAirConditioner,
         f"{0x01}-{0x35}": HomeAirCleaner,
@@ -103,7 +111,8 @@ def Factory(host, server, eojgc, eojcc, eojci=0x01):
         f"{0x02}-{0x7B}": FloorHeater,
         f"{0x02}-{0x7C}": FuelCell,
         f"{0x02}-{0x7D}": StorageBattery,
-        f"{0x02}-{0x7E}": ElectricVehicleCharger,
+        f"{0x02}-{0xA1}": ElectricVehicleCharger,
+        f"{0x02}-{0x7E}": ElectricVehicleChargerDischarger,
         f"{0x02}-{0x80}": ElectricEnergyMeter,
         f"{0x02}-{0x81}": WaterFlowMeter,
         f"{0x02}-{0x82}": GasMeter,
@@ -117,10 +126,12 @@ def Factory(host, server, eojgc, eojcc, eojci=0x01):
         f"{0x02}-{0xA6}": HybridWaterHeater,
         f"{0x03}-{0xB2}": ElectricThermos,
         f"{0x03}-{0xB7}": Refrigerator,
+        f"{0x03}-{0xB8}": CombinationMicrowaveOven,
         f"{0x00}-{0x02}": CrimeSensor,
         f"{0x00}-{0x13}": RainSensor,
         f"{0x00}-{0x03}": EmergencyButton,
         f"{0x03}-{0xCE}": CommercialShowcase,
+        f"{0x05}-{0xFF}": DistributionPanelMeterController,
         None: None,
     }
     instance_object = instances.get(instance, None)

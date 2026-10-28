@@ -176,11 +176,12 @@ def _0080(edt):
 
 def _009X(edt):
     payload = []
+    # Rule A: Less than 16 properties - simple sequential list
     if len(edt) < 17:
         for i in range(1, len(edt)):
             payload.append(edt[i])
         return payload
-
+    # Rule B: 16 or more properties - bitmask
     for i in range(1, len(edt)):
         code = i - 1
         binary = "{0:08b}".format(edt[i])[::-1]
@@ -261,6 +262,7 @@ EPC_SUPER_FUNCTIONS = {
     0x89: _0089,
     0x8A: _008A,
     0x8C: _null_padded_optional_string,
+    0x8F: [_int, DICT_41_ON_OFF],
     0x97: _hh_mm,
     0x9A: _009A,
     0x9D: _009X,

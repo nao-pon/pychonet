@@ -1,7 +1,10 @@
 import asyncio
+import logging
 import socket
 import struct
 from collections import deque
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class UDPServer:
@@ -34,6 +37,14 @@ class UDPServer:
 
         self._subscribers = {}
 
+        # Strong references to scheduled tasks. asyncio only holds WEAK
+        # references to tasks internally — without storing a strong reference
+        # here, _send_periodically() and _recv_periodically() can be garbage
+        # collected mid-execution, silently killing the send/receive loop.
+        # This was the root cause of intermittent discovery failures where
+        # "Task was destroyed but it is pending!" appeared in logs.
+        self._tasks: list = []
+
     # figure out which multicast IP would be used to reach host
     def register_multicast_from_host(self, host):
         # connect to known destination, e.g. via UDP port 80
@@ -64,6 +75,25 @@ class UDPServer:
 
         self._run_future(self._send_periodically(), self._recv_periodically())
 
+    def close(self):
+        """Cleanly cancel running tasks and close the socket.
+
+        Replaces direct access to _sock.close(), which left the
+        _send_periodically and _recv_periodically tasks orphaned rather
+        than cleanly cancelled.
+        """
+        for task in list(self._tasks):
+            if not task.done():
+                task.cancel()
+        # Unregister any pending reader/writer *before* closing the socket,
+        # otherwise a stale callback keeps firing against a dead fd.
+        loop = getattr(self, "loop", None)
+        fd = self._sock.fileno()
+        if loop is not None and fd != -1:
+            loop.remove_reader(fd)
+            loop.remove_writer(fd)
+        self._sock.close()
+
     def subscribe(self, fut):
         self._subscribers[id(fut)] = fut
 
@@ -81,7 +111,12 @@ class UDPServer:
 
     def _run_future(self, *args):
         for fut in args:
-            asyncio.ensure_future(fut, loop=self.loop)
+            task = asyncio.ensure_future(fut, loop=self.loop)
+            # Hold a strong reference to prevent premature garbage collection.
+            self._tasks.append(task)
+            # Clean up the reference once the task completes, to avoid
+            # unbounded growth of self._tasks over the server's lifetime.
+            task.add_done_callback(lambda t: self._tasks.remove(t) if t in self._tasks else None)
 
     def _sock_recv(self, fut=None, registered=False):
         fd = self._sock.fileno()
@@ -105,6 +140,16 @@ class UDPServer:
         return fut
 
     def _sock_send(self, data, addr, fut=None, registered=False):
+        """Send one datagram; returns a future resolved with the byte count.
+
+        Only "would block" conditions (EAGAIN/EINTR) are retried, by waiting
+        for the socket to become writable. Any other OSError (ENETUNREACH,
+        EHOSTUNREACH, ENOKEY from a down WireGuard tunnel, EPERM, ...) is
+        permanent for this packet: retrying it re-arms a writer on a socket
+        that is always writable, which spins the event loop at 100% CPU.
+        Instead the error is set on the future and the packet is dropped,
+        as UDP permits.
+        """
         fd = self._sock.fileno()
 
         if fut is None:
@@ -113,12 +158,16 @@ class UDPServer:
         if registered:
             self.loop.remove_writer(fd)
 
+        if fut.done():  # cancelled by the awaiter while waiting for the writer
+            return fut
+
         if not data:
-            return
+            fut.set_result(0)
+            return fut
 
         try:
             bytes_sent = self._sock.sendto(data, addr)
-        except (BlockingIOError, InterruptedError, OSError):
+        except (BlockingIOError, InterruptedError):
             self.loop.add_writer(fd, self._sock_send, data, addr, fut, True)
         except Exception as e:
             fut.set_exception(e)
@@ -138,7 +187,13 @@ class UDPServer:
             try:
                 while self._send_queue:
                     data, addr = self._send_queue.popleft()
-                    bytes_sent = self._sock_send(data, addr)
+                    try:
+                        # Awaited so only one send is ever waiting on the
+                        # socket's (single, per-fd) asyncio writer slot.
+                        bytes_sent = await self._sock_send(data, addr)
+                    except Exception as e:
+                        _LOGGER.debug("Dropping datagram to %s: %r", addr, e)
+                        continue
                     await self._throttle(bytes_sent, self._upload_speed)
             finally:
                 self._send_event.clear()
